@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<http:listener-config name="employeedataapi-httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="c207f699-e2cd-4cb5-a0e6-356a8416ba1b" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	
+	<configuration-properties doc:name="Configuration properties" doc:id="c42fc251-8fc2-420e-a546-7fb796e4208c" file="employees-DEV.yaml" />
+	<configuration doc:name="Configuration" doc:id="48de778b-ab36-4fe2-b9f0-9e61b10255fa" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="7c2dfc4a-20cd-438c-93b0-4b8705eea862" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2bb53826-5d23-476a-baec-2596b34c4e56" type="DB:CONNECTIVITY">
+			<set-payload value='#["Error in database connectivity, please check configuration"]' doc:name="Set Payload" doc:id="1d7bf452-acd4-462f-9799-29a0affa2553" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7be2fa68-2678-44f7-981e-56aaa8e8306f" type="DB:BAD_SQL_SYNTAX">
+			<set-payload value='#["Error in SQL syntax"]' doc:name="Set Payload" doc:id="45025d1c-7013-4b19-99a5-8faedef66236" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a90296b1-a350-47da-b5d7-7e40077caae5" type="DB:QUERY_EXECUTION">
+			<set-payload value='#["Error in execution of this query, please check all attributes"]' doc:name="Set Payload" doc:id="645c1234-64d1-49e0-ab43-f606c715c4ee" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="044b2d33-eaf7-4b65-9925-e30ad83b16f1" type="VALIDATION:BLANK_STRING">
+			<ee:transform doc:name="Transform Message" doc:id="ea5279be-66f9-46b9-9f6e-7e453f04dbea" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="30ddd3a7-229a-4501-b8d2-598cc5cc7f46" type="VALIDATION:MISMATCH">
+			<ee:transform doc:name="Transform Message" doc:id="ea45fc72-4033-42d5-94b5-edcf36388d51" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="af46b364-8669-402c-a1a5-9f9211ca9da9" type="ANY">
+			<set-payload value='#["Some error occured"]' doc:name="Set Payload" doc:id="1b753d79-400d-45d8-832e-1c3076a99931" />
+		</on-error-propagate>
+	</error-handler>
+	
+	
+</mule>
