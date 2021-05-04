@@ -103,7 +103,7 @@
         <snapshotRepository>
           <id>employees-data</id>
           <name>employees-data</name>
-          <url>http://localhost:8091/repository/dummy/</url>
+          <url>http://localhost:8091/repository/employees-data/</url>
         </snapshotRepository>
      </distributionManagement>
 	
