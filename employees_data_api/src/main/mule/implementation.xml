@@ -209,6 +209,54 @@ output application/json
 			</otherwise>
 		</choice>
 	</flow>
+	<flow name="patchEmployeesDataSImplerFlow" doc:id="6d579a5d-34e7-494f-85ab-d65ab194a6d0" >
+		<flow-ref doc:name="variableSub_Flow" doc:id="6ba58637-757e-4467-8bc6-77289f7a839a" name="variableSub_Flow"/>
+		<db:query-single doc:name="Query single" doc:id="73768136-606b-41a1-b13b-4ed243de72e6" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from employees where emp_no = :no]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	no: vars.empNo
+}]]]></db:input-parameters>
+		</db:query-single>
+		<db:update doc:name="Update" doc:id="c5ee00e4-4a7f-4b19-8f24-28ac723e72fd" config-ref="Database_Config">
+			<db:sql ><![CDATA[update employees set first_name = :fN, last_name = :lN, birth_date = :bD, gender = :g, hire_date = :hD, salary = :s where emp_no = :eNo]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	eNo: vars.empNo,
+	fN: vars.firstName default payload.FIRST_NAME,
+	lN: vars.lastName default payload.LAST_NAME,
+	bD: vars.birthDate default payload.BIRTH_DATE,
+	g: vars.gender default payload.GENDER,
+	hD: vars.hireDate default payload.HIRE_DATE,
+	s: vars.salary default payload.SALARY
+}]]]></db:input-parameters>
+		</db:update>
+		<choice doc:name="Choice" doc:id="301f7c79-e20b-41f4-a97e-00872b67238d" >
+			<when expression="#[payload.affectedRows==1]" >
+				<ee:transform doc:name="Transform Message" doc:id="95ec9aa5-70db-40cc-80d8-814e45d603ec" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Employee data for empNo: " ++ vars.empNo ++ " has been updated"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="d16ab404-2ba3-4a44-97fd-fb399b69e571" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Employee data not updated"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="500" doc:name="httpStatus" doc:id="8a668b01-5bda-4233-8a03-0f09f5e79709" variableName="httpStatus" />
+			</otherwise>
+		</choice>
+	</flow>
 	<flow name="patchEmployeeDataFlow" doc:id="3b4e5291-314d-4a32-881c-0c119bdb4e84">
 		<flow-ref doc:name="variableSub_Flow" doc:id="1e4ab290-4ad8-4bdd-9532-7fcc65cc1f7a" name="variableSub_Flow" />
 		<flow-ref doc:name="patchFlow1" doc:id="180cef9c-185b-4a08-ba90-72cc95f7ddbf" name="patchFlow1" />

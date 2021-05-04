@@ -144,7 +144,7 @@ output application/json
                 <ee:set-variable variableName="empNo">attributes.uriParams.'empNo'</ee:set-variable>
             </ee:variables>
         </ee:transform>
-		<flow-ref doc:name="patchEmployeeDataFlow" doc:id="c88201f8-82c7-4e3a-b60e-4bdcf4b74963" name="patchEmployeeDataFlow"/>
+		<flow-ref doc:name="patchEmployeesDataSImplerFlow" doc:id="c88201f8-82c7-4e3a-b60e-4bdcf4b74963" name="patchEmployeesDataSImplerFlow"/>
     </flow>
     <flow name="get:\employees:employeedataapi-config">
 		<flow-ref doc:name="getAllEmployeesDataFlow" doc:id="5e0cb1a3-17ce-45b9-ae1d-f7bcc27ebbab" name="getAllEmployeesDataFlow"/>
