@@ -26,14 +26,14 @@ payload map {
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="getEmployeeDataFlow" doc:id="ef58ed5c-e989-46e5-b80a-188b9b905d1f" >
+	<flow name="getEmployeeDataFlow" doc:id="ef58ed5c-e989-46e5-b80a-188b9b905d1f">
 		<db:query-single doc:name="Query single" doc:id="8fca3902-a47b-4fa3-9846-6252684de100" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from employees where emp_no = :no]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{
+			<db:sql><![CDATA[select * from employees where emp_no = :no]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	no: vars.empNo
 }]]]></db:input-parameters>
 		</db:query-single>
-		<choice doc:name="Choice" doc:id="9d3afb1a-9845-4f10-b636-af87f3af21a1" >
+		<choice doc:name="Choice" doc:id="9d3afb1a-9845-4f10-b636-af87f3af21a1">
 			<when expression="#[sizeOf(payload)&gt;0]">
 				<ee:transform doc:name="Transform Message" doc:id="9ce2abec-855a-480a-92b7-a43753246d5c">
 			<ee:message>
@@ -51,10 +51,10 @@ output application/json
 			</ee:message>
 		</ee:transform>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="7dccbbc6-210e-41c9-a2b6-ef5d2e5959d2" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="7dccbbc6-210e-41c9-a2b6-ef5d2e5959d2">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -62,20 +62,20 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<set-variable value="404" doc:name="httpStatus" doc:id="d82905f9-62da-4aa3-a5fe-55f6af850515" variableName="httpStatus"/>
+				<set-variable value="404" doc:name="httpStatus" doc:id="d82905f9-62da-4aa3-a5fe-55f6af850515" variableName="httpStatus" />
 			</otherwise>
 		</choice>
 	</flow>
-	<flow name="deleteEmployeeDataFlow" doc:id="f24519c1-96e2-4299-81d4-53c8f3b913b9" >
+	<flow name="deleteEmployeeDataFlow" doc:id="f24519c1-96e2-4299-81d4-53c8f3b913b9">
 		<db:delete doc:name="Delete" doc:id="6f208aab-af11-4179-a106-2d67a116e933" config-ref="Database_Config">
-			<db:sql ><![CDATA[delete from employees where emp_no = :no]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{
+			<db:sql><![CDATA[delete from employees where emp_no = :no]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	no: vars.empNo
 }]]]></db:input-parameters>
 		</db:delete>
-		<ee:transform doc:name="Transform Message" doc:id="146fc43f-0fa5-4bea-9f61-04ecd2a34488" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<ee:transform doc:name="Transform Message" doc:id="146fc43f-0fa5-4bea-9f61-04ecd2a34488">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -92,10 +92,15 @@ output application/json
 		<set-variable value='#[payload.hireDate as Date {format: "dd/MMM/yyyy"} as String {format: "yyyy-MM-dd"} default null]' doc:name="hireDate" doc:id="3d0ed3ff-b9fe-4e4f-8201-e360a61311d4" variableName="hireDate"/>
 		<set-variable value="#[payload.salary]" doc:name="salary" doc:id="28d683a5-76cb-4544-a093-921c31602d63" variableName="salary"/>
 	</sub-flow>
-	<sub-flow name="validationSub_Flow" doc:id="96b7290f-b0f6-4641-a802-b638cb48f4c3" >
-		<validation:matches-regex doc:name="Matches regex - birthDate" doc:id="34f42708-5fa8-410e-910a-f1c323c2c901" value="#[payload.birthDate]" regex="^[0-9]{2}/[A-Z]{1}[a-z]{2}/[0-9]{4}$" message="Enter birthdate in valid format"/>
+	<sub-flow name="validationSub_Flow" doc:id="96b7290f-b0f6-4641-a802-b638cb48f4c3">
+		<validation:matches-regex doc:name="Matches regex - birthDate" doc:id="34f42708-5fa8-410e-910a-f1c323c2c901" value="#[payload.birthDate]" regex="^[0-9]{2}/[A-Z]{1}[a-z]{2}/[0-9]{4}$" message="Enter birthdate in valid format" />
 		<validation:is-not-blank-string doc:name="Is not blank string - firstName" doc:id="ef48021d-981a-4bb9-8263-08285e2b71cd" value="#[payload.name.firstName]" message="First name cannot be blank" />
 		<validation:is-not-blank-string doc:name="Is not blank string - lastName" doc:id="9eda4b9f-5181-46b8-a163-04de5a00f29b" value="#[payload.name.lastName]" message="Last name cannot be blank" />
+	</sub-flow>
+	<sub-flow name="patchValidationSubFlow" doc:id="c8679847-4948-468a-95e3-ac998723148c">
+		<validation:matches-regex doc:name="Matches regex - birthDate" doc:id="5fba9888-c2ea-4e53-9bc3-2a91323eaff6" value='#[vars.birthDate default payload.BIRTH_DATE as String {format: "yyyy-MM-dd"}]' regex="^[0-9]{4}-[0-9]{2}-[0-9]{2}$" message="Enter birthdate in valid format" />
+		<validation:is-not-blank-string doc:name="Is not blank string - firstName" doc:id="a2e4a891-277e-4cc5-98a5-3317ff5b0140" value="#[vars.firstName default payload.FIRST_NAME]" message="First name cannot be blank" />
+		<validation:is-not-blank-string doc:name="Is not blank string - lastName" doc:id="05725bae-cc11-4d2d-917c-aeb85e0d35c1" value="#[vars.lastName default payload.LAST_NAME]" message="Last name cannot be blank" />
 	</sub-flow>
 	<flow name="postEmployeeDataFlow" doc:id="19ebe6bb-4543-4b53-909d-5c524c52f7cc" >
 		<flow-ref doc:name="validationSub_Flow" doc:id="ca4bd48c-25a0-4427-bd48-cf67900690e8" name="validationSub_Flow" />
@@ -209,7 +214,7 @@ output application/json
 			</otherwise>
 		</choice>
 	</flow>
-	<flow name="patchEmployeesDataSImplerFlow" doc:id="6d579a5d-34e7-494f-85ab-d65ab194a6d0" >
+	<flow name="patchEmployeesDataSimplerFlow" doc:id="6d579a5d-34e7-494f-85ab-d65ab194a6d0" >
 		<flow-ref doc:name="variableSub_Flow" doc:id="6ba58637-757e-4467-8bc6-77289f7a839a" name="variableSub_Flow"/>
 		<db:query-single doc:name="Query single" doc:id="73768136-606b-41a1-b13b-4ed243de72e6" config-ref="Database_Config" >
 			<db:sql ><![CDATA[select * from employees where emp_no = :no]]></db:sql>
@@ -217,9 +222,10 @@ output application/json
 	no: vars.empNo
 }]]]></db:input-parameters>
 		</db:query-single>
+		<flow-ref doc:name="patchValidationSubFlow" doc:id="6deda8c8-9fbf-4d7e-a4ab-9c279b2d1acd" name="patchValidationSubFlow" />
 		<db:update doc:name="Update" doc:id="c5ee00e4-4a7f-4b19-8f24-28ac723e72fd" config-ref="Database_Config">
-			<db:sql ><![CDATA[update employees set first_name = :fN, last_name = :lN, birth_date = :bD, gender = :g, hire_date = :hD, salary = :s where emp_no = :eNo]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{
+			<db:sql><![CDATA[update employees set first_name = :fN, last_name = :lN, birth_date = :bD, gender = :g, hire_date = :hD, salary = :s where emp_no = :eNo]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	eNo: vars.empNo,
 	fN: vars.firstName default payload.FIRST_NAME,
 	lN: vars.lastName default payload.LAST_NAME,
@@ -257,109 +263,4 @@ output application/json
 			</otherwise>
 		</choice>
 	</flow>
-	<flow name="patchEmployeeDataFlow" doc:id="3b4e5291-314d-4a32-881c-0c119bdb4e84">
-		<flow-ref doc:name="variableSub_Flow" doc:id="1e4ab290-4ad8-4bdd-9532-7fcc65cc1f7a" name="variableSub_Flow" />
-		<flow-ref doc:name="patchFlow1" doc:id="180cef9c-185b-4a08-ba90-72cc95f7ddbf" name="patchFlow1" />
-		<flow-ref doc:name="patchFlow2" doc:id="d1c8b295-c6dd-4935-bb83-4b659e22b365" name="patchFlow2" />
-		<choice doc:name="Choice" doc:id="0521944c-dbd4-4bd1-aff7-b7cc94143423" >
-			<when expression="#[payload.affectedRows==1]">
-				<ee:transform doc:name="Transform Message" doc:id="808314f9-0415-401b-871a-390af26a2584">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	message: "Employee data for empNo: " ++ vars.empNo ++ " has been updated"
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-			</when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="5c99fb96-e4c4-485e-a8ae-340f4a0efe2d" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message: "Employee data not updated"
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<set-variable value="500" doc:name="httpStatus" doc:id="9ce816be-07b5-4f3e-bfb9-f6ec4dae9f6c" variableName="httpStatus"/>
-			</otherwise>
-		</choice>
-	</flow>
-	<sub-flow name="patchFlow1" doc:id="8a6debed-d2c6-41f7-bd5b-38e8e867683d">
-		<choice doc:name="Choice" doc:id="b854f0f4-e040-42d3-b9eb-d73a848bccfa">
-			<when expression="#[vars.firstName != null]">
-				<validation:is-not-blank-string doc:name="Is not blank string - firstName" doc:id="b9010728-8380-431d-9b64-3c84aa97a770" value="#[vars.firstName]" message="First name cannot be blank" />
-				<db:update doc:name="Update FirstName" doc:id="f2099eab-bf7d-40e3-825b-bb47a7452468" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set first_name = :fN where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	fN: vars.firstName
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-		<choice doc:name="Choice" doc:id="aa6e15bd-ddd9-49ca-84fb-3d5177d3dac1">
-			<when expression="#[vars.lastName != null]">
-				<validation:is-not-blank-string doc:name="Is not blank string - lastName" doc:id="516c2b34-752d-437f-898b-8d0b1c27df10" value="#[vars.lastName]" message="Last name cannot be blank" />
-				<db:update doc:name="Update lastName" doc:id="bb957eb4-c7f1-462a-8672-454011a05279" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set last_name = :lN where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	lN: vars.lastName
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-		<choice doc:name="Choice" doc:id="60ec4183-96ad-42a6-92d7-7ee7b2b2b001">
-			<when expression="#[vars.birthDate != null]">
-				<validation:matches-regex doc:name="Matches regex - birthDate" doc:id="4142c6b4-9ead-42f9-aa33-562b06c4c422" value="#[vars.birthDate]" regex="^[0-9]{4}-[0-9]{2}-[0-9]{2}$" message="Enter birthdate in valid format" />
-				<db:update doc:name="Update birthDate" doc:id="7f1601b7-d2b9-4a55-b5a4-d81d88765171" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set birth_date = :bD where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	bD: vars.birthDate
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-	</sub-flow>
-	<sub-flow name="patchFlow2" doc:id="fac620f9-b471-4150-a6f0-6c592fe22f86">
-		<choice doc:name="Choice" doc:id="7718390d-0777-488d-9b71-490fade1922e">
-			<when expression="#[vars.gender != null]">
-				<db:update doc:name="Update gender" doc:id="90a34719-67b3-44ef-913f-7ff82947f486" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set gender = :g where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	g: vars.gender
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-		<choice doc:name="Choice" doc:id="2476c147-0966-49e0-a203-03881bdf2061">
-			<when expression="#[vars.hireDate != null]">
-				<db:update doc:name="Update hireDate" doc:id="19e7b28b-5f12-4b8a-8d88-e0c24155ea02" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set hire_date = :hD where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	hD: vars.hireDate
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-		<choice doc:name="Choice" doc:id="ed326d1d-eec1-4ce5-b6b3-c2a0519df2a4">
-			<when expression="#[vars.salary != null]">
-				<db:update doc:name="Update salary" doc:id="a6b5ae78-3454-4257-b2cb-32bcc82be3da" config-ref="Database_Config">
-					<db:sql><![CDATA[update employees set salary = :s where emp_no = :eNo]]></db:sql>
-					<db:input-parameters><![CDATA[#[{
-	eNo: vars.empNo,
-	s: vars.salary
-}]]]></db:input-parameters>
-				</db:update>
-			</when>
-		</choice>
-	</sub-flow>
 </mule>
