@@ -256,7 +256,7 @@ output application/json
 	</sub-flow>
 	<flow name="patchEmployeesDataSimplerFlow" doc:id="6d579a5d-34e7-494f-85ab-d65ab194a6d0" >
 		<flow-ref doc:name="variableSub_Flow" doc:id="6ba58637-757e-4467-8bc6-77289f7a839a" name="variableSub_Flow"/>
-		<db:query-single doc:name="Query single" doc:id="73768136-606b-41a1-b13b-4ed243de72e6" config-ref="Database_Config" >
+		<db:query-single doc:name="Query single - Enables to update any value" doc:id="73768136-606b-41a1-b13b-4ed243de72e6" config-ref="Database_Config" >
 			<db:sql ><![CDATA[select * from employees where emp_no = :no]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	no: vars.empNo
