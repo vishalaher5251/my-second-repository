@@ -163,9 +163,17 @@ output application/json
 		</db:query-single>
 		<choice doc:name="Choice" doc:id="6970c380-bc73-497b-a3de-168c16e2dd45" >
 			<when expression="#[sizeOf(payload)&gt;0]">
-				<db:update doc:name="Update" doc:id="551823a1-a8c4-4391-aa47-b6b5ce6e48d5" config-ref="Database_Config">
-					<db:sql ><![CDATA[update employees set first_name = :fN, last_name = :lN, birth_date = :bD, gender = :g, hire_date = :hD, salary = :s where emp_no = :eNo]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
+				<flow-ref doc:name="putUpdateSub_Flow" doc:id="51bad9ae-64f4-4646-8e03-88ec0f63596f" name="putUpdateSub_Flow"/>
+			</when>
+			<otherwise>
+				<flow-ref doc:name="putInsertSub_Flow" doc:id="110bf657-f2e0-4060-9bc1-dd37a71a99fd" name="putInsertSub_Flow"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<sub-flow name="putUpdateSub_Flow" doc:id="a6eb746c-c406-436f-b6e9-8d55f817a648" >
+		<db:update doc:name="Update" doc:id="551823a1-a8c4-4391-aa47-b6b5ce6e48d5" config-ref="Database_Config">
+					<db:sql><![CDATA[update employees set first_name = :fN, last_name = :lN, birth_date = :bD, gender = :g, hire_date = :hD, salary = :s where emp_no = :eNo]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
 	eNo: vars.empNo,
 	fN: vars.firstName,
 	lN: vars.lastName,
@@ -175,22 +183,39 @@ output application/json
 	s: vars.salary
 }]]]></db:input-parameters>
 				</db:update>
-				<ee:transform doc:name="Transform Message" doc:id="a9040d86-67a2-411c-8cd9-e7bf99235391" >
+		<choice doc:name="Choice" doc:id="b388ff1f-720e-4692-9dad-71fcbaf8bd0d" >
+			<when expression="#[payload.affectedRows==1]" >
+				<ee:transform doc:name="Transform Message" doc:id="44c92a23-7609-4d76-b9a9-23160a852556" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	message: "Employee data for empNo: " ++ vars.empNo ++ " has been updated in database"
+	message: "Employee data for empNo: " ++ vars.empNo ++ " has been updated"
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<set-variable value="200" doc:name="httpStatus" doc:id="c1e0836f-681e-40f8-bbdd-128ae0d15662" variableName="httpStatus"/>
+				<set-variable value="200" doc:name="httpStatus" doc:id="c1e0836f-681e-40f8-bbdd-128ae0d15662" variableName="httpStatus" />
 			</when>
 			<otherwise >
-				<db:insert doc:name="Insert" doc:id="380e71cc-f121-4c76-8757-0349936e162a" config-ref="Database_Config" >
-					<db:sql ><![CDATA[insert into employees values(:eNo, :fName, :lName, :bDate, :g, :hDate, :s)]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{
+				<ee:transform doc:name="Transform Message" doc:id="d6685b5c-2ede-49c8-bf82-78e8e14cb4aa" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Employee data not updated"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="500" doc:name="httpStatus" doc:id="eb80ac3e-8b4d-418d-aa16-83ad05cfe7d4" variableName="httpStatus" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="putInsertSub_Flow" doc:id="f0bc388f-48b0-4c78-b1b7-6407031c6a47" >
+		<db:insert doc:name="Insert" doc:id="380e71cc-f121-4c76-8757-0349936e162a" config-ref="Database_Config">
+					<db:sql><![CDATA[insert into employees values(:eNo, :fName, :lName, :bDate, :g, :hDate, :s)]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
 	eNo: vars.empNo,
 	fName: vars.firstName,
 	lName: vars.lastName,
@@ -200,9 +225,11 @@ output application/json
 	s: vars.salary
 }]]]></db:input-parameters>
 				</db:insert>
-				<ee:transform doc:name="Transform Message" doc:id="0260d62a-e221-44c3-ab7f-aa07b1849df5" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="1434a97f-605e-4962-9944-97c37c2c56f6" >
+			<when expression="#[payload.affectedRows==1]">
+				<ee:transform doc:name="Transform Message" doc:id="0260d62a-e221-44c3-ab7f-aa07b1849df5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -210,10 +237,23 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<set-variable value="201" doc:name="httpStatus" doc:id="797b2031-cbba-41c1-af61-01e98fae9e03" variableName="httpStatus"/>
+				<set-variable value="201" doc:name="httpStatus" doc:id="797b2031-cbba-41c1-af61-01e98fae9e03" variableName="httpStatus" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="8dd8ba1d-b9b1-4882-b127-f5108e869470">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Employee data not updated/inserted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<set-variable value="500" doc:name="httpStatus" doc:id="b852367a-9203-4c79-bcc3-f8d78889d906" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
-	</flow>
+	</sub-flow>
 	<flow name="patchEmployeesDataSimplerFlow" doc:id="6d579a5d-34e7-494f-85ab-d65ab194a6d0" >
 		<flow-ref doc:name="variableSub_Flow" doc:id="6ba58637-757e-4467-8bc6-77289f7a839a" name="variableSub_Flow"/>
 		<db:query-single doc:name="Query single" doc:id="73768136-606b-41a1-b13b-4ed243de72e6" config-ref="Database_Config" >
